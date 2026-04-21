@@ -128,7 +128,7 @@ Error type distribution:
 Edit `.env`:
 
 ```
-AGNOST_ORG_ID=6a08ee1e-6f58-46db-b7c6-329d77957b01
+AGNOST_ORG_ID=your-agnost-ord-id
 AGNOST_API_KEY=your-agnost-api-key
 ```
 
