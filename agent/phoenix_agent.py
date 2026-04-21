@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-from config import AGNOST_API_KEY
+from config import AGNOST_ORG_ID
 
 try:
     import agnost
@@ -86,14 +86,14 @@ class PhoenixDevOpsAgent:
     
     def __init__(self, org_id: Optional[str] = None, user_id: str = "phoenix-monitor"):
         self.org_id = org_id or os.getenv("AGNOST_ORG_ID")
-        self.user_id = user_id
+        self.user_id = user_id or os.getenv("AGNOST_USER_ID")
         self.logger = logging.getLogger(__name__)
         self.incidents: List[IncidentReport] = []
         self.mcp_tools = {}
         
         if agnost:
             try:
-                agnost.init(AGNOST_API_KEY, endpoint="https://api.agnost.ai")
+                agnost.init(AGNOST_ORG_ID, endpoint="https://api.agnost.ai")
                 agnost.identify(self.user_id, {
                     "userId": self.user_id,
                     "agent": "phoenix-devops-agent",
@@ -287,7 +287,8 @@ class PhoenixDevOpsAgent:
                         "logs_count": len(logs),
                         "incident_id": incident_id,
                         "user_id": self.user_id,
-                        "session_id": incident_id
+                        "session_id": incident_id,
+                        "org_id": self.org_id
                     }),
                     metadata={
                         "agent": "phoenix-devops-agent",

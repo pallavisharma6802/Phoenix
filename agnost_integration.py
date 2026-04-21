@@ -87,7 +87,7 @@ class AgnostPhoenixWrapper:
         
         if agnost and self.org_id:
             try:
-                agnost.init(AGNOST_API_KEY, endpoint="https://api.agnost.ai")
+                agnost.init(AGNOST_ORG_ID, endpoint="https://api.agnost.ai")
             except Exception as e:
                 print(f"Warning: Could not initialize Agnost: {e}")
     
