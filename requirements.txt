@@ -1,0 +1,4 @@
+psutil==5.9.5
+mcp==1.27.0
+agnost==0.1.13
+agnost-mcp==0.1.12
