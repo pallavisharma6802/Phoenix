@@ -22,7 +22,6 @@ from config import AGNOST_ORG_ID
 
 try:
     import agnost
-    from agnost.types import EventData, EventIOData
 except ImportError:
     print("Warning: agnost SDK not installed. Run: pip install agnost")
     agnost = None
@@ -278,22 +277,20 @@ class PhoenixDevOpsAgent:
         )
         
         self.log_event("INCIDENT_START", f"Starting troubleshooting loop", {"incident_id": incident_id})
+        interaction = None
         
         if agnost:
             try:
-                agnost.track(
-                    "troubleshooting_start",
-                    input=EventIOData(data={
+                interaction = agnost.begin(
+                    user_id=self.user_id,
+                    agent_name="phoenix-devops-agent",
+                    input=json.dumps({
+                        "event": "troubleshooting_start",
                         "logs_count": len(logs),
                         "incident_id": incident_id,
-                        "user_id": self.user_id,
-                        "session_id": incident_id,
-                        "org_id": self.org_id
                     }),
-                    metadata={
-                        "agent": "phoenix-devops-agent",
-                        "tool": "phoenix-troubleshooting-loop"
-                    }
+                    conversation_id=incident_id,
+                    properties={"org_id": self.org_id}
                 )
             except Exception as e:
                 self.logger.debug(f"Agnost tracking failed (non-critical): {e}")
@@ -343,21 +340,15 @@ class PhoenixDevOpsAgent:
                     report.resolution = "Intent drift detected, aborting execution"
                     self.log_event("INCIDENT_FAILED", "Intent drift prevented fix execution")
                     
-                    if agnost:
+                    if interaction:
                         try:
-                            agnost.track(
-                                "troubleshooting_end",
-                                input=EventIOData(data={"incident_id": incident_id}),
-                                output=EventIOData(data={
+                            interaction.end(
+                                output=json.dumps({
                                     "success": False,
                                     "reason": "intent_drift_detected",
                                     "error_type": report.error_type
                                 }),
-                                metadata={
-                                    "user_id": self.user_id,
-                                    "session_id": incident_id,
-                                    "agent": "phoenix-devops-agent"
-                                }
+                                success=False,
                             )
                         except Exception as e:
                             self.logger.debug(f"Agnost tracking failed (non-critical): {e}")
@@ -381,22 +372,16 @@ class PhoenixDevOpsAgent:
                     {"incident_id": incident_id}
                 )
                 
-                if agnost:
+                if interaction:
                     try:
-                        agnost.track(
-                            "troubleshooting_end",
-                            input=EventIOData(data={"incident_id": incident_id}),
-                            output=EventIOData(data={
+                        interaction.end(
+                            output=json.dumps({
                                 "success": True,
                                 "resolution": report.resolution,
                                 "error_type": report.error_type,
                                 "attempts": attempt
                             }),
-                            metadata={
-                                "user_id": self.user_id,
-                                "session_id": incident_id,
-                                "agent": "phoenix-devops-agent"
-                            }
+                            success=True,
                         )
                     except Exception as e:
                         self.logger.debug(f"Agnost tracking failed (non-critical): {e}")
@@ -421,22 +406,16 @@ class PhoenixDevOpsAgent:
             {"incident_id": incident_id}
         )
         
-        if agnost:
+        if interaction:
             try:
-                agnost.track(
-                    "troubleshooting_end",
-                    input=EventIOData(data={"incident_id": incident_id}),
-                    output=EventIOData(data={
+                interaction.end(
+                    output=json.dumps({
                         "success": False,
                         "reason": "max_attempts_exceeded",
                         "error_type": report.error_type,
                         "attempts": max_attempts
                     }),
-                    metadata={
-                        "user_id": self.user_id,
-                        "session_id": incident_id,
-                        "agent": "phoenix-devops-agent"
-                    }
+                    success=False,
                 )
             except Exception as e:
                 self.logger.debug(f"Agnost tracking failed (non-critical): {e}")

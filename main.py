@@ -22,7 +22,7 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 sys.path.insert(0, str(Path(__file__).parent))
 
 from agent.phoenix_agent import PhoenixDevOpsAgent, generate_review_report
-from tests.test_scenarios import TestScenarioRunner
+from tests.test_scenarios import TestScenarioRunner, DEFAULT_REPORT_FILE
 
 
 def setup_logging(log_file: str = "/tmp/phoenix_monitor.log"):
@@ -161,7 +161,7 @@ def main():
         report = runner.generate_report()
         runner.print_summary()
         
-        print(f"\nReport saved to: /tmp/phoenix_test_report.json")
+        print(f"\nReport saved to: {DEFAULT_REPORT_FILE}")
     
     elif args.command == "demo":
         demo()

@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import List, Dict
 from agent.phoenix_agent import PhoenixDevOpsAgent, IncidentPhase
 
+DEFAULT_REPORT_FILE = str(Path(__file__).resolve().parents[1] / "phoenix_test_report.json")
+
 
 class TestScenarioRunner:
     """Runs test scenarios and collects metrics"""
@@ -125,7 +127,7 @@ class TestScenarioRunner:
         
         return self.metrics
     
-    def generate_report(self, output_file: str = "/tmp/phoenix_test_report.json") -> Dict:
+    def generate_report(self, output_file: str = DEFAULT_REPORT_FILE) -> Dict:
         """Generate test report"""
         report = {
             "test_run": {
@@ -141,7 +143,8 @@ class TestScenarioRunner:
                 "intent_drift_detections": self.metrics["intent_drift_detections"],
             },
             "error_distribution": self.metrics["error_distribution"],
-            "scenario_details": self.results[-10:],  # Last 10 for review
+            "scenario_details": self.results,
+            "recent_scenarios": self.results[-10:],
         }
         
         with open(output_file, "w") as f:
@@ -195,7 +198,7 @@ if __name__ == "__main__":
         report = runner.generate_report()
         runner.print_summary()
         
-        print(f"\nDetailed report saved to: /tmp/phoenix_test_report.json")
+        print(f"\nDetailed report saved to: {DEFAULT_REPORT_FILE}")
     
     except KeyboardInterrupt:
         print("\n\nTest interrupted by user")
